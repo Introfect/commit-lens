@@ -6,13 +6,16 @@ import { cors } from "hono/cors";
 // Start a Hono app
 const app = getHono();
 // Add CORS middleware
-  app.use('*', cors({
-    origin: ["*"]   
-  }));
+app.use(
+  "*",
+  cors({
+    origin: ["*"],
+  })
+);
 app.doc("/doc", {
   info: {
-    title: "Partnerhsip navigation API",
-    description: "API for the Partnership navigation app",
+    title: "WIP: update title for workers",
+    description: "WIP: update description for workers",
     version: "0.0.0",
   },
   openapi: "3.0.0",

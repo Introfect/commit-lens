@@ -9,7 +9,7 @@
 	"main": "./workers/app.ts",
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-		"VITE_BACKEND_BASE_URL": "https://backend-production.epyc.workers.dev"
+		"VITE_BACKEND_BASE_URL": "WIP: addd workers url"
 	},
 	"observability": {
 		"enabled": true
