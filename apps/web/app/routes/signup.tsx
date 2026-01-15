@@ -1,13 +1,13 @@
-import type { MetaFunction } from 'react-router';
-import { useNavigate } from 'react-router';
-import { useEffect, useState } from 'react';
-import { useAuth } from '../lib/auth/hooks';
-import { SignupForm } from '../components/SignupForm';
+import type { MetaFunction } from "react-router";
+import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "../lib/auth/hooks";
+import { SignupForm } from "../components/SignupForm";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Sign Up - Your App' },
-    { name: 'description', content: 'Create a new account' },
+    { title: "Sign Up - Your App" },
+    { name: "description", content: "Create a new account" },
   ];
 };
 
@@ -22,12 +22,12 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (mounted && !isLoading && isAuthenticated) {
-      navigate('/home');
+      navigate("/");
     }
   }, [mounted, isLoading, isAuthenticated, navigate]);
 
   const handleSignupSuccess = () => {
-    navigate('/home');
+    navigate("/");
   };
 
   // Don't render anything until mounted and auth state is determined
@@ -51,9 +51,9 @@ export default function SignupPage() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate("/login")}
             className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Sign in here
@@ -68,4 +68,4 @@ export default function SignupPage() {
       </div>
     </div>
   );
-} 
+}

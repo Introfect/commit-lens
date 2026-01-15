@@ -3,12 +3,8 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-const base = "/home/";
-export default defineConfig(({ mode, isPreview }) => ({
-  // base: !isPreview ? base : `${base}/`,
-  // base: mode === "development" ? "/home" : `/home/`,
-  base: base,  
 
+export default defineConfig(() => ({
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
