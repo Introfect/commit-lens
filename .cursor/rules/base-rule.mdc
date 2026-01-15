@@ -1,0 +1,129 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SuperApp Project Rules
+
+## Code Organization
+- Maximum file size: 200 lines
+- Split large components into smaller ones
+- Keep components focused on single responsibility
+- Use custom hooks for reusable logic
+- Implement TypeScript types/interfaces in separate files
+- Follow consistent naming conventions
+
+## Module Development Process
+1. Planning Phase
+   - Create module-specific README first
+   - List all required pages and components
+   - Define interfaces and types
+   - Plan component hierarchy
+   - Identify shared components
+
+2. Implementation Phase
+   - Create basic page structures first
+   - Implement shared components
+   - Add functionality incrementally
+   - Write unit tests alongside development
+
+3. Review Phase
+   - Check component sizes
+   - Verify SOLID principles
+   - Ensure DRY code
+   - Review error handling
+   - Validate accessibility
+
+## Directory Structure
+/modules/[module-name]/
+  ├── README.md           # Module documentation
+  ├── types/              # TypeScript interfaces/types
+  ├── components/         # Reusable components
+  │   └── __tests__/     # Component tests
+  ├── hooks/             # Custom hooks
+  ├── utils/             # Helper functions
+  ├── constants/         # Constants and enums
+  └── pages/             # Page components
+
+## Component Guidelines
+- Use functional components with hooks
+- Implement proper prop types
+- Keep JSX clean and readable
+- Extract complex logic into custom hooks
+- Use composition over inheritance
+- Implement error boundaries where needed
+
+## File Naming Conventions
+- Pages: page.tsx
+- Components: PascalCase.tsx
+- Hooks: useCamelCase.ts
+- Types: PascalCase.types.ts
+- Utils: camelCase.ts
+- Constants: UPPER_SNAKE_CASE.ts
+
+## Code Style
+- Use TypeScript for all new files
+- Follow ESLint and Prettier rules
+- Use meaningful variable and function names
+- Add JSDoc comments for complex functions
+- Keep functions small and focused
+- Use early returns to reduce nesting
+
+## Testing Guidelines
+- Write tests for all components
+- Test business logic in isolation
+- Mock external dependencies
+- Use meaningful test descriptions
+- Follow AAA pattern (Arrange, Act, Assert)
+
+## Error Handling
+- Use try-catch blocks for async operations
+- Implement proper error boundaries
+- Show user-friendly error messages
+- Log errors appropriately
+- Handle edge cases
+
+## Performance Guidelines
+- Implement proper memoization
+- Use lazy loading for routes
+- Optimize images and assets
+- Minimize re-renders
+- Use proper caching strategies
+
+## Accessibility
+- Use semantic HTML
+- Implement ARIA attributes
+- Ensure keyboard navigation
+- Maintain proper contrast
+- Test with screen readers
+
+## Documentation
+- Keep README files up to date
+- Document complex logic
+- Add inline comments when necessary
+- Update API documentation
+- Document breaking changes
+
+## Git Workflow
+- Use feature branches
+- Write meaningful commit messages
+- Keep commits focused and atomic
+- Review code before merging
+- Update documentation with changes
+
+## Security
+- Validate all user inputs
+- Sanitize data before display
+- Use proper authentication
+- Implement rate limiting
+- Follow security best practices
+
+## Module-Specific Rules
+Each module should have its own README.md with:
+- Module overview
+- Required pages and components
+- Dependencies
+- Setup instructions
+- Usage examples
+- Testing guidelines
+- Common issues and solutions 

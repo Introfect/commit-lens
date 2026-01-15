@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "user_email_key" ON "user" USING btree ("email") WHERE "user"."is_active";

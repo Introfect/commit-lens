@@ -1,0 +1,34 @@
+{
+  "name": "backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --env dev",
+    "cf-typegen": "wrangler types --env dev",
+    "db:generate": "dotenv -e .env -- drizzle-kit generate",
+    "db:deploy": "dotenv -e .env -- drizzle-kit migrate",
+    "db:start": "supabase start"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "0.19.4",
+    "@scalar/hono-api-reference": "^0.8.8",
+    "@tsndr/cloudflare-worker-jwt": "^3.1.4",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.41.0",
+    "hono": "4.7.6",
+    "luxon": "^3.6.1",
+    "postgres": "^3.4.5",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250505.0",
+    "@types/luxon": "^3.6.2",
+    "@types/node": "22.13.0",
+    "@types/service-worker-mock": "^2.0.4",
+    "dotenv-cli": "^8.0.0",
+    "drizzle-kit": "^0.31.1",
+    "supabase": "^2.22.6",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.14.1"
+  }
+}

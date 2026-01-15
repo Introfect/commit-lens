@@ -1,0 +1,34 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### ✅ **Instruction for Handling Form State Correctly in React:**
+- Use `useState` to create and manage form state.  
+- Do **NOT** directly mutate the state or form object.  
+- Use a `setState` function to update the state correctly when handling `onChange` events.  
+- Follow this pattern:
+```jsx
+// Correct way to handle form input
+const [project, setProject] = useState({ name: "" });
+
+const handleChange = (e) => {
+  setProject({
+    ...project,
+    [e.target.name]: e.target.value,
+  });
+};
+
+<input
+  name="name"
+  value={project.name}
+  onChange={handleChange}
+/>
+```
+
+---
+
+### ⚡️ **Explanation for Gen AI:**
+1. **State Initialization:** Use `useState` to initialize the form state.
+2. **Immutable Updates:** Use the spread operator (`...project`) to create a new object while updating the changed field.
+3. **Controlled Components:** Pass the `value` prop and attach the `onChange` handler to ensure a two-way binding.
