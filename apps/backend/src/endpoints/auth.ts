@@ -1,193 +1,170 @@
-import {
-  getOpenApiClientErrorResponse,
-  jsonContent,
-  getOpenapiResponse,
-  getAuthOpenApiResponse,
-  ApiKeyHeaderSchema,
-} from "../utils/openapi";
-import { ErrorCodes, handleApiErrors } from "../utils/error";
 import { getHono } from "../utils/hono";
-import { z } from "@hono/zod-openapi";
+import { getGoogleOauthClient } from "../features/auth/google";
+import { generateState, generateCodeVerifier } from "arctic";
+import { OAuth2RequestError } from "arctic";
 import { connectDb } from "../features/db/connect";
-import { createUser } from "../features/user";
-import {
-  createApiKey,
-  getUserFromApiKey,
-  verifyEmailAndPassword,
-} from "../features/auth";
+import { createUser, getUserByEmail } from "../features/user";
+import { OAuthAccountTable } from "../features/db/schema";
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
+import { encrypt, decrypt } from "../utils/crypto";
+import { csrfProtect } from "../middleware/csrf";
+import { createSession, verifySession } from "../features/auth/session";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 
 export const authEndpoint = getHono();
 
-authEndpoint.openapi(
-  {
-    method: "get",
-    path: "/test",
-    tags: ["auth"],
-    responses: {
-      ...getOpenapiResponse(
-        z.object({
-          message: z.string(),
-        })
-      ),
-    },
-  },
-  async (c) => {
-    return c.json({ message: "Hello, world!" }, 200);
+const GOOGLE_OAUTH_COOKIE_CONFIG = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV !== "development",
+  path: "/",
+  maxAge: 60 * 10,
+};
+
+authEndpoint.get("/google/redirect", async (c) => {
+  const googleOauthClient = getGoogleOauthClient({ env: c.env });
+  const state = generateState();
+  const codeVerifier = generateCodeVerifier();
+
+  const url = await googleOauthClient.createAuthorizationURL(state, codeVerifier, {
+    scopes: ["profile", "email"],
+  });
+
+  setCookie(c, "google_oauth_state", state, GOOGLE_OAUTH_COOKIE_CONFIG);
+  setCookie(
+    c,
+    "google_oauth_code_verifier",
+    codeVerifier,
+    GOOGLE_OAUTH_COOKIE_CONFIG
+  );
+
+  return c.redirect(url.toString());
+});
+
+authEndpoint.get("/google/callback", async (c) => {
+  const googleOauthClient = getGoogleOauthClient({ env: c.env });
+  const db = connectDb({ env: c.env });
+
+  const code = c.req.query("code");
+  const state = c.req.query("state");
+  const storedState = getCookie(c, "google_oauth_state");
+  const storedCodeVerifier = getCookie(c, "google_oauth_code_verifier");
+
+  if (!code || !state || !storedState || state !== storedState) {
+    return c.json({ error: "Invalid request" }, 400);
   }
-);
 
-authEndpoint.openapi(
-  {
-    method: "post",
-    path: "/signup",
-    tags: ["auth"],
-    summary: "Sign up for a new account",
-    request: {
-      body: jsonContent(
-        z.object({
-          email: z.string().email(),
-          name: z.string().min(1).max(100),
-          company: z.string().min(1).max(100),
-          plainTextPassword: z.string().min(8).max(72),
-        })
-      ),
-    },
-    responses: {
-      ...getOpenapiResponse(
-        z.object({
-          ok: z.literal(true),
-          data: z.object({
-            apiKey: z.string(),
-          }),
-        })
-      ),
-      400: getOpenApiClientErrorResponse({
-        errorCodesSchema: z.literal(ErrorCodes.EMAIL_ALREADY_IN_USE),
-      }),
-    },
-  },
-  async (c) => {
-    try {
-      const db = connectDb({ env: c.env });
-      const { email, name, company, plainTextPassword } = c.req.valid("json");
+  try {
+    const tokens = await googleOauthClient.validateAuthorizationCode(
+      code,
+      storedCodeVerifier!
+    );
+    const googleUserResponse = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      }
+    );
+    const googleUser = (await googleUserResponse.json()) as {
+      sub: string;
+      name: string;
+      email: string;
+      picture: string;
+    };
 
+    let user = await getUserByEmail({ email: googleUser.email, db });
+
+    const encryptedAccessToken = await encrypt(tokens.accessToken, c.env);
+    const encryptedRefreshToken = tokens.refreshToken
+      ? await encrypt(tokens.refreshToken, c.env)
+      : undefined;
+
+    if (user) {
+      const [oauthAccount] = await db
+        .select()
+        .from(OAuthAccountTable)
+        .where(
+          and(
+            eq(OAuthAccountTable.providerId, "google"),
+            eq(OAuthAccountTable.providerUserId, googleUser.sub)
+          )
+        );
+
+      if (!oauthAccount) {
+        // Link account
+        await db.insert(OAuthAccountTable).values({
+          userId: user.id,
+          providerId: "google",
+          providerUserId: googleUser.sub,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+        });
+      }
+    } else {
       const userRes = await createUser({
-        email,
-        name,
-        company,
-        plainTextPassword,
+        email: googleUser.email,
+        name: googleUser.name,
+        avatarUrl: googleUser.picture,
         db,
       });
 
       if (!userRes.ok) {
-        return c.json(userRes, 400);
+        return c.json(userRes, 500);
       }
-
-      const user = userRes.user;
-
-      const apiKey = await createApiKey({
-        env: c.env,
+      user = userRes.user;
+      await db.insert(OAuthAccountTable).values({
         userId: user.id,
+        providerId: "google",
+        providerUserId: googleUser.sub,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
       });
-
-      return c.json({ ok: true, data: { apiKey } } as const, 200);
-    } catch (err) {
-      return handleApiErrors(c, err);
     }
-  }
-);
 
-authEndpoint.openapi(
-  {
-    method: "post",
-    path: "/login",
-    tags: ["auth"],
-    summary: "Login to the application",
-    request: {
-      body: jsonContent(
-        z.object({
-          email: z.string(),
-          plainTextPassword: z.string(),
-        })
-      ),
-    },
-    responses: {
-      ...getOpenapiResponse(
-        z.object({
-          ok: z.literal(true),
-          data: z.object({
-            apiKey: z.string(),
-          }),
-        })
-      ),
-      401: getOpenApiClientErrorResponse({
-        errorCodesSchema: z.literal(ErrorCodes.INVALID_EMAIL_OR_PASSWORD),
-      }),
-    },
-  },
-  async (c) => {
-    try {
-      const db = connectDb({ env: c.env });
-      const { email, plainTextPassword } = c.req.valid("json");
-
-      const apiKeyRes = await verifyEmailAndPassword({
-        email,
-        plainTextPassword,
-        db,
-        env: c.env,
-      });
-
-      if (!apiKeyRes.ok) {
-        return c.json(apiKeyRes, 401);
-      }
-
-      return c.json(
-        { ok: true, data: { apiKey: apiKeyRes.data.apiKey } } as const,
-        200
-      );
-    } catch (err) {
-      return handleApiErrors(c, err);
+    const session = await createSession({ userId: user.id, secret: c.env.JWT_SECRET });
+    setCookie(c, "session", session, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    return c.redirect("/"); // Redirect to frontend
+  } catch (e) {
+    if (e instanceof OAuth2RequestError) {
+      return c.json({ error: "Invalid OAuth request" }, 400);
     }
+    return c.json({ error: "An unknown error occurred" }, 500);
   }
-);
+});
 
-authEndpoint.openapi(
-  {
-    method: "post",
-    path: "/info",
-    tags: ["auth"],
-    summary: "Get information about the current user",
-    responses: {
-      ...getAuthOpenApiResponse(
-        z.object({
-          ok: z.literal(true),
-          data: z.object({
-            id: z.string(),
-            email: z.string(),
-            name: z.string(),
-            company: z.string(),
-          }),
-        })
-      ),
-    },
-    request: {
-      headers: ApiKeyHeaderSchema,
-    },
-  },
-  async (c) => {
-    try {
-      const db = connectDb({ env: c.env });
-      const apiKey = c.req.valid("header")["x-api-key"];
-
-      const userRes = await getUserFromApiKey({ apiKey, db, env: c.env });
-
-      if (!userRes.ok) {
-        return c.json(userRes, 401);
-      }
-
-      return c.json({ ok: true, data: userRes.user } as const, 200);
-    } catch (err) {
-      return handleApiErrors(c, err);
-    }
+authEndpoint.get("/me", async (c) => {
+  const session = getCookie(c, "session");
+  if (!session) {
+    return c.json({ user: null });
   }
-);
+  const { ok, payload } = await verifySession({ token: session, secret: c.env.JWT_SECRET });
+  if (!ok) {
+    return c.json({ user: null });
+  }
+
+  const db = connectDb({ env: c.env });
+  const user = await db.query.UserTable.findFirst({
+    where: (users, { eq }) => eq(users.id, payload.userId),
+  });
+
+  return c.json({
+    ok: true,
+    data: user,
+  });
+});
+
+authEndpoint.post("/logout", csrfProtect, async (c) => {
+  deleteCookie(c, "session", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    path: "/",
+  });
+  return c.json({ ok: true });
+});

@@ -4,7 +4,6 @@ import { DateTime } from "luxon";
 import { z } from "zod";
 import { ErrorCodes } from "../utils/error";
 import { getUserByEmail, getUserById } from "./user";
-import bcrypt from "bcryptjs";
 
 export async function createApiKey({
   env,
@@ -45,7 +44,7 @@ export async function getUserFromApiKey({
   apiKey,
   db,
   env,
-}: WithDbAndEnv<{ apiKey: string }>) {
+}: WithDbAndEnv<{ apiKey:string }>) {
   const decoded = await decodeApiKey({ env, token: apiKey });
 
   if (!decoded.ok) {
@@ -63,46 +62,4 @@ export async function getUserFromApiKey({
   }
 
   return { ok: true, user: user } as const;
-}
-
-export async function verifyEmailAndPassword({
-  email,
-  plainTextPassword,
-  db,
-  env,
-}: WithDbAndEnv<{
-  email: string;
-  plainTextPassword: string;
-}>) {
-  const userRes = await getUserByEmail({ email, db });
-
-  if (!userRes) {
-    return {
-      ok: false,
-      errorCode: ErrorCodes.INVALID_EMAIL_OR_PASSWORD,
-      error: "Invalid email or password",
-    } as const;
-  }
-
-  const user = userRes;
-
-  const isPasswordValid = await bcrypt.compare(
-    plainTextPassword,
-    user.passwordHash
-  );
-
-  if (!isPasswordValid) {
-    return {
-      ok: false,
-      errorCode: ErrorCodes.INVALID_EMAIL_OR_PASSWORD,
-      error: "Invalid email or password",
-    } as const;
-  }
-
-  const apiKey = await createApiKey({ env, userId: user.id });
-
-  return {
-    ok: true,
-    data: { apiKey },
-  } as const;
 }

@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "0.19.4",
-    "@scalar/hono-api-reference": "^0.8.8",
     "@tsndr/cloudflare-worker-jwt": "^3.1.4",
+    "arctic": "^3.7.0",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.41.0",
     "hono": "4.7.6",

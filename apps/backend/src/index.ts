@@ -1,6 +1,7 @@
-import { Scalar } from "@scalar/hono-api-reference";
 import { getHono } from "./utils/hono";
 import { authEndpoint } from "./endpoints/auth";
+import { githubEndpoint } from "./endpoints/github";
+import { repositoriesEndpoint } from "./endpoints/repositories";
 import { cors } from "hono/cors";
 
 // Start a Hono app
@@ -14,15 +15,15 @@ app.use(
 );
 app.doc("/doc", {
   info: {
-    title: "WIP: update title for workers",
-    description: "WIP: update description for workers",
-    version: "0.0.0",
+    title: "CommitLens Backend API",
+    description: "API for CommitLens, a frontend-focused code review platform.",
+    version: "0.0.1",
   },
   openapi: "3.0.0",
 });
 
 app.route("api/v1/auth", authEndpoint);
-
-app.get("/api", Scalar({ url: "/doc", theme: "elysiajs", layout: "classic" }));
+app.route("api/v1/github", githubEndpoint);
+app.route("api/v1/repositories", repositoriesEndpoint);
 
 export default app;
