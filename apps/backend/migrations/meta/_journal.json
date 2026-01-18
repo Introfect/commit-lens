@@ -15,6 +15,27 @@
       "when": 1746447334896,
       "tag": "0001_panoramic_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768645456758,
+      "tag": "0002_slim_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768754542944,
+      "tag": "0003_skinny_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1737242400000,
+      "tag": "0004_clean_user_table",
+      "breakpoints": true
     }
   ]
 }

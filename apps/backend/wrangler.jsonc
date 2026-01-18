@@ -10,12 +10,27 @@
   "observability": {
     "enabled": true
   },
-  "placement": { "mode": "smart" },
-  "compatibility_flags": ["nodejs_compat"],
+  "placement": {
+    "mode": "smart"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "env": {
     "dev": {
       "vars": {
-        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI="
+        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
+        "GOOGLE_CLIENT_ID": "WIP",
+        "GOOGLE_CLIENT_SECRET": "WIP",
+        "GOOGLE_REDIRECT_URI": "http://127.0.0.1:8787/api/v1/auth/google/callback",
+        "ENCRYPTION_KEY": "WIP_32_BYTE_SECRET_KEY",
+        "GITHUB_APP_REDIRECT_URI": "http://127.0.0.1:8787/api/v1/github/callback",
+        "GITHUB_APP_ID": "2661296",
+        "GITHUB_APP_PRIVATE_KEY": "WIP",
+        "GITHUB_WEBHOOK_SECRET": "ijqisjijijqsiqisjiqjisjiqjsiqjsijqijs",
+        "FRONTEND_URL": "http://localhost:5173",
+        "CLERK_PUBLISHABLE_KEY": "pk_test_dmVyaWZpZWQta2l0ZS03MS5jbGVyay5hY2NvdW50cy5kZXYk",
+        "CLERK_SECRET_KEY": "sk_test_9Lc6guj0G6dyCkpsMnay8CngO1PzbS2EMW9W4xgDiG"
       },
       "hyperdrive": [
         {
@@ -27,7 +42,18 @@
     },
     "production": {
       "vars": {
-        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI="
+        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
+        "ENVIRONMENT": "production",
+        "GITHUB_CLIENT_ID": "WIP",
+        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_APP_ID": "WIP",
+        "GITHUB_APP_PRIVATE_KEY": "WIP",
+        "GITHUB_WEBHOOK_SECRET": "WIP",
+        "ENCRYPTION_KEY": "WIP_32_BYTE_KEY",
+        "GITHUB_APP_REDIRECT_URI": "https://your-production-url/api/v1/github/callback",
+        "FRONTEND_URL": "https://your-production-frontend-url.com",
+        "CLERK_PUBLISHABLE_KEY": "pk_test_dmVyaWZpZWQta2l0ZS03MS5jbGVyay5hY2NvdW50cy5kZXYk",
+        "CLERK_SECRET_KEY": "sk_test_9Lc6guj0G6dyCkpsMnay8CngO1PzbS2EMW9W4xgDiG"
       },
       "hyperdrive": [
         {
@@ -42,14 +68,12 @@
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
    */
-
   /**
    * Bindings
    * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
    * databases, object storage, AI inference, real-time communication and more.
    * https://developers.cloudflare.com/workers/runtime-apis/bindings/
    */
-
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
@@ -59,13 +83,11 @@
    * Note: Use secrets to store sensitive data.
    * https://developers.cloudflare.com/workers/configuration/secrets/
    */
-
   /**
    * Static Assets
    * https://developers.cloudflare.com/workers/static-assets/binding/
    */
   // "assets": { "directory": "./public/", "binding": "ASSETS" },
-
   /**
    * Service Bindings (communicate between multiple Workers)
    * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

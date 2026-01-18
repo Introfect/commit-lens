@@ -1,0 +1,5 @@
+I'm currently blocked on applying the necessary database migrations because the local Supabase environment is not starting up correctly. The `supabase start` command is failing, which prevents me from connecting to the database.
+
+This seems to be an issue with the local Docker or Supabase CLI setup. Could you please ensure that your local Supabase environment can start successfully? You can do this by running `pnpm db:start` in the `apps/backend` directory.
+
+Once the database is running, I will be able to apply the migrations and proceed with the rest of the implementation.

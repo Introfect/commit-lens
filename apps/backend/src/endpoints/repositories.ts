@@ -1,32 +1,19 @@
 import { getHono } from "../utils/hono";
 import { connectDb } from "../features/db/connect";
-import { getInstallationsForUser, deleteInstallation } from "../features/repository";
+import { getInstallationsForUser, deleteInstallation, getRepositoriesForUser } from "../features/repository";
 import { csrfProtect } from "../middleware/csrf";
-import { verifySession } from "../features/auth/session";
-import { getCookie } from "hono/cookie";
+import { getAuth } from "@hono/clerk-auth";
 
 export const repositoriesEndpoint = getHono();
 
 repositoriesEndpoint.get("/", async (c) => {
-  const session = getCookie(c, "session");
-  if (!session) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-  const { ok, payload } = await verifySession({ token: session, secret: c.env.JWT_SECRET });
-  if (!ok) {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
   const db = connectDb({ env: c.env });
-  const installations = await getInstallationsForUser({ userId: payload.userId, db });
-
-  // In a real app, you would use the installation to fetch the repositories
-  // from the GitHub API.
-  const repositories = installations.map((inst) => ({
-    id: inst.installationId,
-    name: inst.accountLogin,
-    avatarUrl: inst.accountAvatarUrl,
-  }));
+  const repositories = await getRepositoriesForUser({ userId: auth.userId, db });
 
   return c.json({
     ok: true,
@@ -34,13 +21,9 @@ repositoriesEndpoint.get("/", async (c) => {
   });
 });
 
-repositoriesEndpoint.delete("/:installationId", csrfProtect, async (c) => {
-  const session = getCookie(c, "session");
-  if (!session) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-  const { ok, payload } = await verifySession({ token: session, secret: c.env.JWT_SECRET });
-  if (!ok) {
+repositoriesEndpoint.delete("/:installationId", async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
@@ -49,8 +32,9 @@ repositoriesEndpoint.delete("/:installationId", csrfProtect, async (c) => {
 
   const deleted = await deleteInstallation({
     installationId,
-    userId: payload.userId,
+    userId: auth.userId,
     db,
+    env: c.env,
   });
 
   if (deleted) {

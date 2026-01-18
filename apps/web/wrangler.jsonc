@@ -9,7 +9,8 @@
 	"main": "./workers/app.ts",
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-		"VITE_BACKEND_BASE_URL": "WIP: addd workers url"
+		"VITE_BACKEND_BASE_URL": "WIP: addd workers url",
+		"CLERK_PUBLISHABLE_KEY": "pk_test_dmVyaWZpZWQta2l0ZS03MS5jbGVyay5hY2NvdW50cy5kZXYk"
 	},
 	"observability": {
 		"enabled": true
