@@ -7,7 +7,6 @@ import {
 } from "../services/gemini";
 import {
   fetchPullRequestDetails,
-  fetchPullRequestDiff,
   fetchPullRequestFiles,
   postPullRequestReview,
 } from "../services/github";
@@ -366,14 +365,7 @@ export async function performPullRequestReviewInternal(
 
     await markReviewStatus({ db, eventId, reviewStatus: "reviewing" });
 
-    const [diffResult, pullRequestDetailsResult, pullRequestFilesResult] = await Promise.all([
-      fetchPullRequestDiff({
-        env,
-        installationId: repository.installationId,
-        owner: repository.owner,
-        repo: repository.name,
-        prNumber,
-      }),
+    const [pullRequestDetailsResult, pullRequestFilesResult] = await Promise.all([
       fetchPullRequestDetails({
         env,
         installationId: repository.installationId,
@@ -390,11 +382,6 @@ export async function performPullRequestReviewInternal(
       }),
     ]);
 
-    if (!diffResult.ok) {
-      await markReviewStatus({ db, eventId, reviewStatus: "failed" });
-      return diffResult;
-    }
-
     if (!pullRequestDetailsResult.ok) {
       await markReviewStatus({ db, eventId, reviewStatus: "failed" });
       return pullRequestDetailsResult;
@@ -403,15 +390,6 @@ export async function performPullRequestReviewInternal(
     if (!pullRequestFilesResult.ok) {
       await markReviewStatus({ db, eventId, reviewStatus: "failed" });
       return pullRequestFilesResult;
-    }
-
-    if (!diffResult.data.trim()) {
-      await markReviewStatus({ db, eventId, reviewStatus: "failed" });
-      return {
-        ok: false,
-        errorCode: ErrorCodes.PR_REVIEW_DIFF_EMPTY,
-        error: "Empty diff received",
-      } as const;
     }
 
     const pullRequestDetails = pullRequestDetailsResult.data;
@@ -430,7 +408,6 @@ export async function performPullRequestReviewInternal(
       prData: {
         title: pullRequestDetails.title,
         description: pullRequestDetails.body ?? prEvent.body ?? undefined,
-        diff: diffResult.data,
         projectContext: formatProjectContextForPrompt(focusedProjectContext.documents),
         changedFiles: pullRequestFiles.map((file) => ({
           path: file.filename,

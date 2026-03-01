@@ -404,7 +404,7 @@ export async function fetchPullRequestFiles({
 
   const files: GitHubPullRequestFile[] = [];
 
-  for (let page = 1; page <= 10; page += 1) {
+  for (let page = 1; page <= 30; page += 1) {
     const response = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/files?per_page=100&page=${page}`,
       {
