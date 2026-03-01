@@ -9,7 +9,7 @@ interface RepositoryCardProps {
 
 export function RepositoryCard({ repository, onDisconnect }: RepositoryCardProps) {
   return (
-    <div className="group p-6 rounded-2xl bg-[#2a2a2a] border border-white/10 hover:border-white/20 transition-all duration-200">
+    <div className="group p-6 reeeddddccc-2xl bg-[#2a2a2a] border border-white/10 hover:border-white/20 transition-all duration-200">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
@@ -42,10 +42,10 @@ export function RepositoryCard({ repository, onDisconnect }: RepositoryCardProps
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onDisconnect(repository.id)}
+            onClick={() => onDisconnect(repository.installationId)}
             className="w-full text-red-500 hover:text-red-400 hover:bg-red-500/10"
           >
-            Disconnect
+            Disconnect App Access
           </Button>
         </div>
       )}

@@ -32,13 +32,62 @@
     @apply border-border;
   }
   
+  html {
+    background: #101313;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background: #1a1a1a;
+    font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(22, 151, 95, 0.18), transparent 24%),
+      linear-gradient(180deg, #0b0f0f 0%, #101313 100%);
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    font-family: "Sora", "Space Grotesk", "Avenir Next", sans-serif;
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  .animate-float {
+    animation: float 7s ease-in-out infinite;
+  }
+
+  .animate-float-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .animate-float-delay-700 {
+    animation-delay: 0.7s;
+  }
+
+  .animate-float-delay-1000 {
+    animation-delay: 1s;
+  }
+
+  .animate-float-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .dashboard-grid-surface {
+    background-color: #0b0d0f;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      radial-gradient(circle at top left, rgba(30, 159, 99, 0.12), transparent 28%);
+    background-size: 28px 28px, 28px 28px, auto;
+    background-position: 0 0, 0 0, 0 0;
   }
 }

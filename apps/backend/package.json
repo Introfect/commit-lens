@@ -11,8 +11,7 @@
     "db:reset": "supabase db reset && dotenv -e .env -- drizzle-kit migrate"
   },
   "dependencies": {
-    "@clerk/backend": "^2.29.3",
-    "@hono/clerk-auth": "^3.1.0",
+    "@google/genai": "^1.37.0",
     "@hono/zod-openapi": "0.19.4",
     "@tsndr/cloudflare-worker-jwt": "^3.1.4",
     "arctic": "^3.7.0",

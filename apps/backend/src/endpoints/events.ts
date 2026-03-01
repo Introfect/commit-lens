@@ -1,20 +1,26 @@
 import { getHono } from "../utils/hono";
-import { getAuth } from "@hono/clerk-auth";
 import { connectDb } from "../features/db/connect";
 import { getPullRequestEventsForUser } from "../features/pullRequestEvent";
 import { getRepositoriesForUser, getRepositoryIdsForUser } from "../features/repository";
+import { createLogger, generateCorrelationId } from "../utils/logger";
+import { getErrorMessage } from "../utils/error";
+import { requireSession } from "../features/auth/session";
 
 export const eventsEndpoint = getHono();
+
+eventsEndpoint.use("*", requireSession());
 
 /**
  * Get pull request events for the authenticated user
  * GET /events/pull-requests
  */
 eventsEndpoint.get("/pull-requests", async (c) => {
-  const auth = getAuth(c);
-  if (!auth?.userId) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+  const authUser = c.get("authUser");
+
+  const logger = createLogger({
+    correlationId: generateCorrelationId(),
+    operation: "events_pull_requests",
+  });
 
   try {
     const db = connectDb({ env: c.env });
@@ -22,7 +28,7 @@ eventsEndpoint.get("/pull-requests", async (c) => {
     // Get repository IDs accessible by the user
     const repositoryIds = await getRepositoryIdsForUser({
       db,
-      userId: auth.userId,
+      userId: authUser.id,
     });
 
     if (repositoryIds.length === 0) {
@@ -46,12 +52,15 @@ eventsEndpoint.get("/pull-requests", async (c) => {
       data: events,
       count: events.length,
     });
-  } catch (error: any) {
-    console.error("Failed to fetch pull request events:", error);
+  } catch (error) {
+    logger.error(
+      "Failed to fetch pull request events",
+      error instanceof Error ? error : null
+    );
     return c.json(
       {
         error: "Failed to fetch pull request events",
-        details: error.message,
+        details: getErrorMessage(error instanceof Error ? error : null),
       },
       500
     );
@@ -63,17 +72,19 @@ eventsEndpoint.get("/pull-requests", async (c) => {
  * GET /events/repositories
  */
 eventsEndpoint.get("/repositories", async (c) => {
-  const auth = getAuth(c);
-  if (!auth?.userId) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+  const authUser = c.get("authUser");
+
+  const logger = createLogger({
+    correlationId: generateCorrelationId(),
+    operation: "events_repositories",
+  });
 
   try {
     const db = connectDb({ env: c.env });
 
     const repositories = await getRepositoriesForUser({
       db,
-      userId: auth.userId,
+      userId: authUser.id,
     });
 
     return c.json({
@@ -81,12 +92,15 @@ eventsEndpoint.get("/repositories", async (c) => {
       data: repositories,
       count: repositories.length,
     });
-  } catch (error: any) {
-    console.error("Failed to fetch repositories:", error);
+  } catch (error) {
+    logger.error(
+      "Failed to fetch repositories",
+      error instanceof Error ? error : null
+    );
     return c.json(
       {
         error: "Failed to fetch repositories",
-        details: error.message,
+        details: getErrorMessage(error instanceof Error ? error : null),
       },
       500
     );

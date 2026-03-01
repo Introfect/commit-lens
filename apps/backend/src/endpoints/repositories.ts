@@ -1,19 +1,19 @@
 import { getHono } from "../utils/hono";
 import { connectDb } from "../features/db/connect";
-import { getInstallationsForUser, deleteInstallation, getRepositoriesForUser } from "../features/repository";
-import { csrfProtect } from "../middleware/csrf";
-import { getAuth } from "@hono/clerk-auth";
+import {
+  getRepositoriesForUser,
+  removeRepositoryFromWorkspace,
+} from "../features/repository";
+import { requireSession } from "../features/auth/session";
 
 export const repositoriesEndpoint = getHono();
 
-repositoriesEndpoint.get("/", async (c) => {
-  const auth = getAuth(c);
-  if (!auth?.userId) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+repositoriesEndpoint.use("*", requireSession());
 
+repositoriesEndpoint.get("/", async (c) => {
+  const authUser = c.get("authUser");
   const db = connectDb({ env: c.env });
-  const repositories = await getRepositoriesForUser({ userId: auth.userId, db });
+  const repositories = await getRepositoriesForUser({ userId: authUser.id, db });
 
   return c.json({
     ok: true,
@@ -21,27 +21,20 @@ repositoriesEndpoint.get("/", async (c) => {
   });
 });
 
-repositoriesEndpoint.delete("/:installationId", async (c) => {
-  const auth = getAuth(c);
-  if (!auth?.userId) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  const installationId = c.req.param("installationId");
+repositoriesEndpoint.delete("/:repositoryId", async (c) => {
+  const authUser = c.get("authUser");
+  const repositoryId = c.req.param("repositoryId");
   const db = connectDb({ env: c.env });
 
-  const deleted = await deleteInstallation({
-    installationId,
-    userId: auth.userId,
+  const deleted = await removeRepositoryFromWorkspace({
+    repositoryId,
+    userId: authUser.id,
     db,
-    env: c.env,
   });
 
   if (deleted) {
-    return c.json({ ok: true, message: "Installation deleted" });
+    return c.json({ ok: true, message: "Repository removed from workspace" });
   } else {
-    return c.json({ ok: false, error: "Installation not found or unauthorized" }, 404);
+    return c.json({ ok: false, error: "Repository not found or unauthorized" }, 404);
   }
 });
-
-

@@ -14,7 +14,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="h-full bg-background text-foreground antialiased font-sans">
+      <body className="h-full bg-background text-foreground antialiased">
         {children}
         <ScrollRestoration />
         <Scripts />

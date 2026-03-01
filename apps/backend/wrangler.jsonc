@@ -20,50 +20,79 @@
     "dev": {
       "vars": {
         "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
-        "GOOGLE_CLIENT_ID": "WIP",
-        "GOOGLE_CLIENT_SECRET": "WIP",
-        "GOOGLE_REDIRECT_URI": "http://127.0.0.1:8787/api/v1/auth/google/callback",
+        "GITHUB_CLIENT_ID": "WIP",
+        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_REDIRECT_URI": "http://localhost:8787/api/v1/auth/github/callback",
         "ENCRYPTION_KEY": "WIP_32_BYTE_SECRET_KEY",
-        "GITHUB_APP_REDIRECT_URI": "http://127.0.0.1:8787/api/v1/github/callback",
+        "GITHUB_APP_REDIRECT_URI": "http://localhost:8787/api/v1/github/callback",
         "GITHUB_APP_ID": "2661296",
         "GITHUB_APP_PRIVATE_KEY": "WIP",
         "GITHUB_WEBHOOK_SECRET": "ijqisjijijqsiqisjiqjisjiqjsiqjsijqijs",
-        "FRONTEND_URL": "http://localhost:5173",
-        "CLERK_PUBLISHABLE_KEY": "pk_test_dmVyaWZpZWQta2l0ZS03MS5jbGVyay5hY2NvdW50cy5kZXYk",
-        "CLERK_SECRET_KEY": "sk_test_9Lc6guj0G6dyCkpsMnay8CngO1PzbS2EMW9W4xgDiG"
+        "FRONTEND_URL": "http://localhost:5173"
       },
-      "hyperdrive": [
-        {
-          "binding": "DB",
-          "id": "<invalid_id_for_local>",
-          "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-        }
-      ]
-    },
+       "hyperdrive": [
+         {
+           "binding": "DB",
+           "id": "<invalid_id_for_local>",
+           "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:57322/postgres"
+         }
+       ],
+       "queues": {
+         "producers": [
+           {
+             "binding": "PR_REVIEW_QUEUE",
+             "queue": "pr-review-queue"
+           }
+         ],
+         "consumers": [
+           {
+             "queue": "pr-review-queue",
+             "max_batch_size": 1,
+             "max_batch_timeout": 30,
+             "max_retries": 2
+           }
+         ]
+       }
+     },
     "production": {
       "vars": {
         "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
         "ENVIRONMENT": "production",
         "GITHUB_CLIENT_ID": "WIP",
         "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_REDIRECT_URI": "https://your-production-url/api/v1/auth/github/callback",
         "GITHUB_APP_ID": "WIP",
         "GITHUB_APP_PRIVATE_KEY": "WIP",
         "GITHUB_WEBHOOK_SECRET": "WIP",
         "ENCRYPTION_KEY": "WIP_32_BYTE_KEY",
         "GITHUB_APP_REDIRECT_URI": "https://your-production-url/api/v1/github/callback",
-        "FRONTEND_URL": "https://your-production-frontend-url.com",
-        "CLERK_PUBLISHABLE_KEY": "pk_test_dmVyaWZpZWQta2l0ZS03MS5jbGVyay5hY2NvdW50cy5kZXYk",
-        "CLERK_SECRET_KEY": "sk_test_9Lc6guj0G6dyCkpsMnay8CngO1PzbS2EMW9W4xgDiG"
+        "FRONTEND_URL": "https://your-production-frontend-url.com"
       },
-      "hyperdrive": [
-        {
-          "binding": "DB",
-          "id": "97baa54916d54d71b7f5abfa0cffc807",
-          "localConnectionString": "postgresql://postgres.rgxzyniozrqauhsyfdyk:V2l7AqhngsQAeoDA@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
-        }
-      ]
-    }
-  }
+       "hyperdrive": [
+         {
+           "binding": "DB",
+           "id": "97baa54916d54d71b7f5abfa0cffc807",
+           "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:57322/postgres"
+         }
+       ],
+       "queues": {
+         "producers": [
+           {
+             "binding": "PR_REVIEW_QUEUE",
+             "queue": "pr-review-queue"
+           }
+         ],
+         "consumers": [
+           {
+             "queue": "pr-review-queue",
+             "max_batch_size": 1,
+             "max_batch_timeout": 30,
+             "max_retries": 2
+           }
+         ]
+       }
+     }
+   }
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

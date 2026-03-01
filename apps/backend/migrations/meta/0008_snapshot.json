@@ -1,0 +1,737 @@
+{
+  "id": "de1a6728-3176-48de-9979-ac813b1a7c18",
+  "prevId": "9a137d70-407e-49a4-af1c-c6b2b78a9c03",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.oauth_account": {
+      "name": "oauth_account",
+      "schema": "",
+      "columns": {
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_user_id": {
+          "name": "provider_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "oauth_account_user_id_user_id_fk": {
+          "name": "oauth_account_user_id_user_id_fk",
+          "tableFrom": "oauth_account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "oauth_account_provider_id_provider_user_id_pk": {
+          "name": "oauth_account_provider_id_provider_user_id_pk",
+          "columns": [
+            "provider_id",
+            "provider_user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pull_request_event": {
+      "name": "pull_request_event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pr_number": {
+          "name": "pr_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_avatar_url": {
+          "name": "author_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "base_branch": {
+          "name": "base_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "head_branch": {
+          "name": "head_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "head_sha": {
+          "name": "head_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "merged": {
+          "name": "merged",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'false'"
+        },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "review_status": {
+          "name": "review_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'idle'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pull_request_event_repository_id_repository_id_fk": {
+          "name": "pull_request_event_repository_id_repository_id_fk",
+          "tableFrom": "pull_request_event",
+          "tableTo": "repository",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pull_request_inline_comment": {
+      "name": "pull_request_inline_comment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "review_artifact_id": {
+          "name": "review_artifact_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "severity": {
+          "name": "severity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "side": {
+          "name": "side",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_line": {
+          "name": "start_line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_side": {
+          "name": "start_side",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject_type": {
+          "name": "subject_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'line'"
+        },
+        "github_review_comment_id": {
+          "name": "github_review_comment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "anchor_status": {
+          "name": "anchor_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'unanchored'"
+        },
+        "anchor_failure_reason": {
+          "name": "anchor_failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fix_prompt_status": {
+          "name": "fix_prompt_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'not_generated'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pull_request_inline_comment_review_artifact_id_pull_request_review_artifact_id_fk": {
+          "name": "pull_request_inline_comment_review_artifact_id_pull_request_review_artifact_id_fk",
+          "tableFrom": "pull_request_inline_comment",
+          "tableTo": "pull_request_review_artifact",
+          "columnsFrom": [
+            "review_artifact_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pull_request_review_artifact": {
+      "name": "pull_request_review_artifact",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pr_number": {
+          "name": "pr_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "head_sha": {
+          "name": "head_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "overall_body": {
+          "name": "overall_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pr_summary": {
+          "name": "pr_summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence_score": {
+          "name": "confidence_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence_reason": {
+          "name": "confidence_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "github_review_id": {
+          "name": "github_review_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_event": {
+          "name": "review_event",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "posting_status": {
+          "name": "posting_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pull_request_review_artifact_event_id_pull_request_event_id_fk": {
+          "name": "pull_request_review_artifact_event_id_pull_request_event_id_fk",
+          "tableFrom": "pull_request_review_artifact",
+          "tableTo": "pull_request_event",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pull_request_review_artifact_repository_id_repository_id_fk": {
+          "name": "pull_request_review_artifact_repository_id_repository_id_fk",
+          "tableFrom": "pull_request_review_artifact",
+          "tableTo": "repository",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.repository_installation": {
+      "name": "repository_installation",
+      "schema": "",
+      "columns": {
+        "installation_id": {
+          "name": "installation_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_login": {
+          "name": "account_login",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_avatar_url": {
+          "name": "account_avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "repository_installation_user_id_user_id_fk": {
+          "name": "repository_installation_user_id_user_id_fk",
+          "tableFrom": "repository_installation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.repository": {
+      "name": "repository",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "installation_id": {
+          "name": "installation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_private": {
+          "name": "is_private",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'false'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "default_branch": {
+          "name": "default_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "repository_installation_id_repository_installation_installation_id_fk": {
+          "name": "repository_installation_id_repository_installation_installation_id_fk",
+          "tableFrom": "repository",
+          "tableTo": "repository_installation",
+          "columnsFrom": [
+            "installation_id"
+          ],
+          "columnsTo": [
+            "installation_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "github_login": {
+          "name": "github_login",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_github_login_unique": {
+          "name": "user_github_login_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "github_login"
+          ]
+        },
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

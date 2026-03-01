@@ -1,5 +1,5 @@
-import { GitPullRequest, GitMerge, ExternalLink, GitBranch } from 'lucide-react';
-import { Button } from './ui/button';
+import { GitPullRequest, GitMerge, ExternalLink, GitBranch, Bot, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { buttonVariants } from './ui/button';
 import type { PullRequestEventResponse } from '../types';
 
 interface PREventCardProps {
@@ -40,11 +40,41 @@ export function PREventCard({ event }: PREventCardProps) {
     return <GitPullRequest className="h-5 w-5" />;
   };
 
+  const getReviewStatusDisplay = () => {
+    switch (event.reviewStatus) {
+      case 'reviewing':
+        return {
+          icon: <Loader2 className="h-4 w-4 animate-spin" />,
+          text: 'Bot is reviewing this PR...',
+          color: 'text-blue-400',
+          bgColor: 'bg-blue-500/10'
+        };
+      case 'reviewed':
+        return {
+          icon: <CheckCircle className="h-4 w-4" />,
+          text: 'AI reviewed',
+          color: 'text-green-400',
+          bgColor: 'bg-green-500/10'
+        };
+      case 'failed':
+        return {
+          icon: <AlertCircle className="h-4 w-4" />,
+          text: 'Review failed',
+          color: 'text-red-400',
+          bgColor: 'bg-red-500/10'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const reviewStatus = getReviewStatusDisplay();
+
   return (
-    <div className="group p-6 rounded-2xl bg-[#2a2a2a] border border-white/10 hover:border-white/20 transition-all duration-200">
+    <div className="group p-6 reeeddddccc-2xl bg-[#2a2a2a] border border-white/10 hover:border-white/20 transition-all duration-200">
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className={`mt-1 p-2.5 rounded-xl ${getActionColor(event.action)}`}>
+        <div className={`mt-1 p-2.5 reeeddddccc-xl ${getActionColor(event.action)}`}>
           {getIcon()}
         </div>
 
@@ -72,6 +102,13 @@ export function PREventCard({ event }: PREventCardProps) {
             <span>#{event.prNumber}</span>
             <span className="text-gray-600">•</span>
             <span className="capitalize">{event.action}</span>
+            {reviewStatus && (
+              <div className={`flex items-center gap-1 px-2 py-0.5 reeeddddccc-full text-xs ${reviewStatus.bgColor} ${reviewStatus.color}`}>
+                <Bot className="h-3 w-3" />
+                {reviewStatus.icon}
+                <span>{reviewStatus.text}</span>
+              </div>
+            )}
           </div>
 
           {/* Author and Branches */}
@@ -81,7 +118,7 @@ export function PREventCard({ event }: PREventCardProps) {
                 <img
                   src={event.author.avatarUrl}
                   alt={event.author.username}
-                  className="h-5 w-5 rounded-full ring-2 ring-white/10"
+                  className="h-5 w-5 reeeddddccc-full ring-2 ring-white/10"
                 />
               )}
               <span className="text-gray-400">{event.author.username}</span>
@@ -100,11 +137,10 @@ export function PREventCard({ event }: PREventCardProps) {
           href={event.htmlUrl}
           target="_blank"
           rel="noreferrer"
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          className={`${buttonVariants({ variant: 'ghost', size: 'icon' })} opacity-0 group-hover:opacity-100 transition-opacity`}
+          aria-label={`Open pull request ${event.title} on GitHub`}
         >
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4 text-gray-400" />
-          </Button>
+          <ExternalLink className="h-4 w-4 text-gray-400" />
         </a>
       </div>
     </div>

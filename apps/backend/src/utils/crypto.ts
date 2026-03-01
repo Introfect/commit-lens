@@ -4,7 +4,7 @@ const ALGORITHM = {
   name: "AES-GCM",
   iv: new Uint8Array(12), // 12-byte IV (nonce) is standard for AES-GCM
 };
-const KEY_USAGES: KeyUsage[] = ["encrypt", "decrypt"];
+const KEY_USAGES: Array<"encrypt" | "decrypt"> = ["encrypt", "decrypt"];
 
 async function getEncryptionKey(env: Env): Promise<CryptoKey> {
   const keyBuffer = Uint8Array.from(atob(env.ENCRYPTION_KEY), (c) =>

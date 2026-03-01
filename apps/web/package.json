@@ -12,7 +12,6 @@
     "api:generate": "openapi-typescript http://localhost:8787/doc -o ./app/lib/api/types.ts"
   },
   "dependencies": {
-    "@clerk/react-router": "^2.3.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv-cli": "^8.0.0",
@@ -23,7 +22,8 @@
     "react-dom": "^19.2.3",
     "react-router": "^7.7.1",
     "react-router-dom": "^7.0.0",
-    "tailwind-merge": "^3.2.0"
+    "tailwind-merge": "^3.2.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.0.12",

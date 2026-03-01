@@ -1,19 +1,12 @@
-import { redirect, Form } from "react-router-dom";
-import type { ActionFunction } from "react-router-dom";
+import { redirect } from 'react-router';
+import type { Route } from './+types/logout';
+import { getBackendApiBaseUrl } from '../core/api/server';
 
-export const action: ActionFunction = async () => {
-  // In a real app, you'd make an API call to your backend to invalidate the session.
-  // For now, we'll just redirect to the landing page.
-  return redirect("/");
-};
+export async function loader(args: Route.LoaderArgs) {
+  const backendUrl = getBackendApiBaseUrl(args.context.cloudflare.env);
+  throw redirect(`${backendUrl}/auth/logout`);
+}
 
 export default function LogoutPage() {
-  return (
-    <div className="p-4">
-      <p>Logging you out...</p>
-      <Form method="post">
-        <button type="submit">Logout</button>
-      </Form>
-    </div>
-  );
+  return null;
 }
