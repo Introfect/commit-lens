@@ -49,11 +49,14 @@ export function setAuthCookie(apiKey: string, options: CookieOptions = {}): stri
 export function getAuthCookie(cookieString?: string): string | null {
   if (!cookieString) return null;
   
-  const cookies = cookieString.split(';').reduce((acc, cookie) => {
+  const cookies: Record<string, string> = {};
+
+  cookieString.split(';').forEach((cookie) => {
     const [name, value] = cookie.trim().split('=');
-    acc[name] = value;
-    return acc;
-  }, {} as Record<string, string>);
+    if (name && value) {
+      cookies[name] = value;
+    }
+  });
   
   return cookies[AUTH_COOKIE_NAME] || null;
 }

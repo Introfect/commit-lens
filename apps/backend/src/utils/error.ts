@@ -1,17 +1,75 @@
-import { Context } from "hono";
-
-export async function handleApiErrors(c: Context, err: unknown) {
-  if (err instanceof Error) {
-    return c.json({ ok: false, error: err.message } as const, 500);
-  }
-
-  throw err;
-}
+import type { Context } from "hono";
+import type { SessionUser } from "../features/auth/session";
 
 export const ErrorCodes = {
-  INVALID_EMAIL_OR_PASSWORD: "INVALID_EMAIL_OR_PASSWORD",
-  EMAIL_ALREADY_IN_USE: "EMAIL_ALREADY_IN_USE",
+  AUTH_SESSION_INVALID: "AUTH_SESSION_INVALID",
   INVALID_API_KEY: "INVALID_API_KEY",
+  EMAIL_ALREADY_IN_USE: "EMAIL_ALREADY_IN_USE",
+  GITHUB_APP_CONFIGURATION_INVALID: "GITHUB_APP_CONFIGURATION_INVALID",
+  GITHUB_ACCESS_TOKEN_FAILED: "GITHUB_ACCESS_TOKEN_FAILED",
+  GITHUB_INSTALLATION_FETCH_FAILED: "GITHUB_INSTALLATION_FETCH_FAILED",
+  GITHUB_REPOSITORIES_FETCH_FAILED: "GITHUB_REPOSITORIES_FETCH_FAILED",
+  GITHUB_OAUTH_FAILED: "GITHUB_OAUTH_FAILED",
+  GITHUB_USER_FETCH_FAILED: "GITHUB_USER_FETCH_FAILED",
+  GITHUB_DIFF_FETCH_FAILED: "GITHUB_DIFF_FETCH_FAILED",
+  GITHUB_PR_FETCH_FAILED: "GITHUB_PR_FETCH_FAILED",
+  GITHUB_PR_FILES_FETCH_FAILED: "GITHUB_PR_FILES_FETCH_FAILED",
+  GITHUB_CONTENT_FETCH_FAILED: "GITHUB_CONTENT_FETCH_FAILED",
+  GITHUB_REVIEW_POST_FAILED: "GITHUB_REVIEW_POST_FAILED",
+  GITHUB_COMMENT_POST_FAILED: "GITHUB_COMMENT_POST_FAILED",
+  GITHUB_CALLBACK_INVALID: "GITHUB_CALLBACK_INVALID",
+  GITHUB_STATE_INVALID: "GITHUB_STATE_INVALID",
+  GITHUB_INSTALLATION_CONFLICT: "GITHUB_INSTALLATION_CONFLICT",
+  GEMINI_API_KEY_MISSING: "GEMINI_API_KEY_MISSING",
+  GEMINI_RESPONSE_EMPTY: "GEMINI_RESPONSE_EMPTY",
+  GEMINI_RESPONSE_INVALID: "GEMINI_RESPONSE_INVALID",
+  GEMINI_API_FAILED: "GEMINI_API_FAILED",
+  JSON_INVALID: "JSON_INVALID",
+  REPOSITORY_NOT_FOUND: "REPOSITORY_NOT_FOUND",
+  PR_EVENT_NOT_FOUND: "PR_EVENT_NOT_FOUND",
+  PR_REVIEW_QUEUE_FAILED: "PR_REVIEW_QUEUE_FAILED",
+  PR_REVIEW_DIFF_EMPTY: "PR_REVIEW_DIFF_EMPTY",
+  PR_REVIEW_FAILED: "PR_REVIEW_FAILED",
+  PR_REVIEW_FIX_PROMPT_FAILED: "PR_REVIEW_FIX_PROMPT_FAILED",
+  PR_REVIEW_ARTIFACT_NOT_FOUND: "PR_REVIEW_ARTIFACT_NOT_FOUND",
+  PR_REVIEW_COMMENT_NOT_FOUND: "PR_REVIEW_COMMENT_NOT_FOUND",
+  WEBHOOK_HEADERS_MISSING: "WEBHOOK_HEADERS_MISSING",
+  WEBHOOK_SIGNATURE_INVALID: "WEBHOOK_SIGNATURE_INVALID",
+  WEBHOOK_INSTALLATION_MISSING: "WEBHOOK_INSTALLATION_MISSING",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
 
 export type ErrorCodes = (typeof ErrorCodes)[keyof typeof ErrorCodes];
+
+export type ErrorWithMessage = Error | { message: string; stack?: string };
+
+export type Result<T> =
+  | { ok: true; data: T }
+  | { ok: false; errorCode: ErrorCodes; error: string };
+
+export function getErrorMessage(error: ErrorWithMessage | null | undefined): string {
+  if (!error) {
+    return "Unexpected error";
+  }
+
+  return error.message;
+}
+
+export async function handleApiErrors(
+  c: Context<{
+    Bindings: Env;
+    Variables: {
+      authUser: SessionUser;
+    };
+  }>,
+  err: ErrorWithMessage | null | undefined
+) {
+  return c.json(
+    {
+      ok: false,
+      errorCode: ErrorCodes.INTERNAL_ERROR,
+      error: getErrorMessage(err),
+    } as const,
+    500
+  );
+}

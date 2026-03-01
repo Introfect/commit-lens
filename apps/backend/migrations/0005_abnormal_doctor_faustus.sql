@@ -1,0 +1,1 @@
+ALTER TABLE "pull_request_event" ADD COLUMN "review_status" text DEFAULT 'idle' NOT NULL;

@@ -2,12 +2,12 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "fullstack-base-template-backend"
+project_id = "commit-less-dev"
 
 [api]
 enabled = true
 # Port to use for the API URL.
-port = 54321
+port = 57321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
 schemas = ["public", "graphql_public"]
@@ -23,7 +23,7 @@ enabled = false
 
 [db]
 # Port to use for the local database URL.
-port = 54322
+port = 57322
 # Port used by db diff command to initialize the shadow database.
 shadow_port = 54320
 # The database major version to use. This has to be the same as your remote database's. Run `SHOW
@@ -33,7 +33,7 @@ major_version = 15
 [db.pooler]
 enabled = false
 # Port to use for the local connection pooler.
-port = 54329
+port = 57329
 # Specifies when a server connection can be reused by other clients.
 # Configure one of the supported pooler modes: `transaction`, `session`.
 pool_mode = "transaction"
@@ -58,16 +58,16 @@ enabled = true
 sql_paths = ["./seed.sql"]
 
 [realtime]
-enabled = true
+enabled = false
 # Bind realtime via either IPv4 or IPv6. (default: IPv4)
-# ip_version = "IPv6"
+# ip_version = "IPv4"
 # The maximum length in bytes of HTTP request headers. (default: 4096)
 # max_header_length = 4096
 
 [studio]
 enabled = true
 # Port to use for Supabase Studio.
-port = 54323
+port = 57323
 # External URL of the API server that frontend connects to.
 api_url = "http://127.0.0.1"
 # OpenAI API Key to use for Supabase AI in the Supabase Studio.
@@ -78,7 +78,7 @@ openai_api_key = "env(OPENAI_API_KEY)"
 [inbucket]
 enabled = true
 # Port to use for the email testing server web interface.
-port = 54324
+port = 57324
 # Uncomment to expose additional ports for testing user applications that send emails.
 # smtp_port = 54325
 # pop3_port = 54326

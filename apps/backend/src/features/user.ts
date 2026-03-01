@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { WithDb } from "../utils/commonTypes";
 import { UserTable } from "./db/schema";
 import { eq } from "drizzle-orm";
@@ -10,60 +9,72 @@ const UserSelectInfo = {
   },
   info: {
     id: UserTable.id,
+    githubLogin: UserTable.githubLogin,
     email: UserTable.email,
     name: UserTable.name,
-    company: UserTable.company,
+    avatarUrl: UserTable.avatarUrl,
   },
-  withPassword: {
-    id: UserTable.id,
-    passwordHash: UserTable.passwordHash,
-  },
-};
-export async function createUser({
-  company,
+} as const;
+
+export async function upsertGitHubUser({
+  id,
+  githubLogin,
   email,
   name,
-  plainTextPassword,
+  avatarUrl,
   db,
 }: WithDb<{
-  email: string;
-  company: string;
+  id: string;
+  githubLogin: string;
+  email: string | null;
   name: string;
-  plainTextPassword: string;
+  avatarUrl: string | null;
 }>) {
-  const hashedPassword = await bcrypt.hash(plainTextPassword, 10);
-
-  const user = await db
+  const users = await db
     .insert(UserTable)
     .values({
-      company,
+      id,
+      githubLogin,
       email,
       name,
-      passwordHash: hashedPassword,
+      avatarUrl,
+      updatedAt: new Date(),
     })
-    .onConflictDoNothing({
-      target: [UserTable.email],
-      where: eq(UserTable.isActive, true),
+    .onConflictDoUpdate({
+      target: UserTable.id,
+      set: {
+        githubLogin,
+        email,
+        name,
+        avatarUrl,
+        updatedAt: new Date(),
+      },
     })
-    .returning();
+    .returning(UserSelectInfo.info);
 
-  if (user.length === 0) {
+  const user = users[0] ?? null;
+
+  if (!user) {
     return {
       ok: false,
-      errorCode: ErrorCodes.EMAIL_ALREADY_IN_USE,
-      error: `Email already in use. Use another email or login.`,
+      errorCode: ErrorCodes.INTERNAL_ERROR,
+      error: "Failed to upsert GitHub user",
     } as const;
   }
 
-  return { ok: true, user: user[0] } as const;
+  return { ok: true, user } as const;
 }
 
 export async function getUserByEmail({
   email,
   db,
-}: WithDb<{ email: string; selectInfo?: typeof UserSelectInfo }>) {
+}: WithDb<{ email: string | null }>) {
+  if (email === null) {
+    return null;
+  }
+
   const user = await db
-    .select(UserSelectInfo.withPassword)
+    .select(UserSelectInfo.info)
     .from(UserTable)
     .where(eq(UserTable.email, email));
 

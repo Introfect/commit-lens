@@ -10,46 +10,99 @@
   "observability": {
     "enabled": true
   },
-  "placement": { "mode": "smart" },
-  "compatibility_flags": ["nodejs_compat"],
+  "placement": {
+    "mode": "smart"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "env": {
     "dev": {
       "vars": {
-        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI="
+        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
+        "GITHUB_CLIENT_ID": "WIP",
+        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_REDIRECT_URI": "http://localhost:8787/api/v1/auth/github/callback",
+        "ENCRYPTION_KEY": "WIP_32_BYTE_SECRET_KEY",
+        "GITHUB_APP_REDIRECT_URI": "http://localhost:8787/api/v1/github/callback",
+        "GITHUB_APP_ID": "2661296",
+        "GITHUB_APP_PRIVATE_KEY": "WIP",
+        "GITHUB_WEBHOOK_SECRET": "ijqisjijijqsiqisjiqjisjiqjsiqjsijqijs",
+        "FRONTEND_URL": "http://localhost:5173"
       },
-      "hyperdrive": [
-        {
-          "binding": "DB",
-          "id": "<invalid_id_for_local>",
-          "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-        }
-      ]
-    },
+       "hyperdrive": [
+         {
+           "binding": "DB",
+           "id": "<invalid_id_for_local>",
+           "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:57322/postgres"
+         }
+       ],
+       "queues": {
+         "producers": [
+           {
+             "binding": "PR_REVIEW_QUEUE",
+             "queue": "pr-review-queue"
+           }
+         ],
+         "consumers": [
+           {
+             "queue": "pr-review-queue",
+             "max_batch_size": 1,
+             "max_batch_timeout": 30,
+             "max_retries": 2
+           }
+         ]
+       }
+     },
     "production": {
       "vars": {
-        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI="
+        "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
+        "ENVIRONMENT": "production",
+        "GITHUB_CLIENT_ID": "WIP",
+        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_REDIRECT_URI": "https://your-production-url/api/v1/auth/github/callback",
+        "GITHUB_APP_ID": "WIP",
+        "GITHUB_APP_PRIVATE_KEY": "WIP",
+        "GITHUB_WEBHOOK_SECRET": "WIP",
+        "ENCRYPTION_KEY": "WIP_32_BYTE_KEY",
+        "GITHUB_APP_REDIRECT_URI": "https://your-production-url/api/v1/github/callback",
+        "FRONTEND_URL": "https://your-production-frontend-url.com"
       },
-      "hyperdrive": [
-        {
-          "binding": "DB",
-          "id": "97baa54916d54d71b7f5abfa0cffc807",
-          "localConnectionString": "postgresql://postgres.rgxzyniozrqauhsyfdyk:V2l7AqhngsQAeoDA@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
-        }
-      ]
-    }
-  }
+       "hyperdrive": [
+         {
+           "binding": "DB",
+           "id": "97baa54916d54d71b7f5abfa0cffc807",
+           "localConnectionString": "postgresql://postgres:postgres@127.0.0.1:57322/postgres"
+         }
+       ],
+       "queues": {
+         "producers": [
+           {
+             "binding": "PR_REVIEW_QUEUE",
+             "queue": "pr-review-queue"
+           }
+         ],
+         "consumers": [
+           {
+             "queue": "pr-review-queue",
+             "max_batch_size": 1,
+             "max_batch_timeout": 30,
+             "max_retries": 2
+           }
+         ]
+       }
+     }
+   }
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
    */
-
   /**
    * Bindings
    * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
    * databases, object storage, AI inference, real-time communication and more.
    * https://developers.cloudflare.com/workers/runtime-apis/bindings/
    */
-
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
@@ -59,13 +112,11 @@
    * Note: Use secrets to store sensitive data.
    * https://developers.cloudflare.com/workers/configuration/secrets/
    */
-
   /**
    * Static Assets
    * https://developers.cloudflare.com/workers/static-assets/binding/
    */
   // "assets": { "directory": "./public/", "binding": "ASSETS" },
-
   /**
    * Service Bindings (communicate between multiple Workers)
    * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

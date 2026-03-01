@@ -1,0 +1,1 @@
+ALTER TABLE "repository" ADD COLUMN "is_removed_from_workspace" boolean DEFAULT false NOT NULL;

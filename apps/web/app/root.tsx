@@ -1,88 +1,32 @@
-import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "react-router";
+import { isRouteErrorResponse, Outlet, useRouteError } from 'react-router';
+import { RootLayout } from './layout';
+import './app.css';
 
-import type { Route } from "./+types/root";
-import "./app.css";
-import { AuthProvider } from "./lib/auth/context";
-import { getAuthCookie } from "./lib/auth/cookies";
-
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
-
-export function Layout({ children }: { children: React.ReactNode }) {
+export default function App() {
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-export function loader({ request }: Route.LoaderArgs) {
-  const cookieHeader = request.headers.get("Cookie");
-  const apiKey = getAuthCookie(cookieHeader || undefined);
-  
-  return { apiKey };
-}
-
-export default function App({ loaderData }: Route.ComponentProps) {
-  return (
-    <AuthProvider initialApiKey={loaderData?.apiKey}>
+    <RootLayout>
       <Outlet />
-    </AuthProvider>
+    </RootLayout>
   );
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let status = 500;
+  let message = 'An unexpected error occurred.';
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
+    status = error.status;
+    message = error.statusText;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <RootLayout>
+      <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+        <p className="text-sm uppercase tracking-[0.22em] text-white/35">Application Error</p>
+        <h1 className="mt-3 text-5xl font-semibold text-white">{status}</h1>
+        <p className="mt-3 max-w-md text-base text-white/55">{message}</p>
+      </div>
+    </RootLayout>
   );
 }
