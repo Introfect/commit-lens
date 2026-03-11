@@ -20,12 +20,13 @@
     "dev": {
       "vars": {
         "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
-        "GITHUB_CLIENT_ID": "WIP",
-        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_CLIENT_ID": "WIP",
+        "GITHUB_OAUTH_CLIENT_SECRET": "WIP",
         "GITHUB_OAUTH_REDIRECT_URI": "http://localhost:8787/api/v1/auth/github/callback",
         "ENCRYPTION_KEY": "WIP_32_BYTE_SECRET_KEY",
         "GITHUB_APP_REDIRECT_URI": "http://localhost:8787/api/v1/github/callback",
         "GITHUB_APP_ID": "2661296",
+        "GITHUB_APP_SLUG": "commit-lens-dev",
         "GITHUB_APP_PRIVATE_KEY": "WIP",
         "GITHUB_WEBHOOK_SECRET": "ijqisjijijqsiqisjiqjisjiqjsiqjsijqijs",
         "FRONTEND_URL": "http://localhost:5173"
@@ -58,10 +59,11 @@
       "vars": {
         "JWT_SECRET": "j4fSBaJrAKr1kY62r/MvbhUhaaPNVJUJDEW0+/3Q7SI=",
         "ENVIRONMENT": "production",
-        "GITHUB_CLIENT_ID": "WIP",
-        "GITHUB_CLIENT_SECRET": "WIP",
+        "GITHUB_OAUTH_CLIENT_ID": "WIP",
+        "GITHUB_OAUTH_CLIENT_SECRET": "WIP",
         "GITHUB_OAUTH_REDIRECT_URI": "https://your-production-url/api/v1/auth/github/callback",
         "GITHUB_APP_ID": "WIP",
+        "GITHUB_APP_SLUG": "WIP",
         "GITHUB_APP_PRIVATE_KEY": "WIP",
         "GITHUB_WEBHOOK_SECRET": "WIP",
         "ENCRYPTION_KEY": "WIP_32_BYTE_KEY",

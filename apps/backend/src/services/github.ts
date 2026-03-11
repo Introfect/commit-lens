@@ -14,6 +14,7 @@ import {
   GitHubRepositoryContentFileSchema,
 } from "../types/github";
 import { ErrorCodes, Result, getErrorMessage } from "../utils/error";
+import { createLogger, generateCorrelationId } from "../utils/logger";
 
 function convertPKCS1toPKCS8(pkcs1Key: string): string {
   const base64 = pkcs1Key
@@ -121,6 +122,78 @@ function buildGitHubHeaders({
   };
 }
 
+type GitHubRequestMetadata = {
+  installationId?: string;
+  owner?: string;
+  repo?: string;
+  prNumber?: string;
+  page?: number;
+  path?: string;
+};
+
+function getLogSafeGithubUrl(url: string): string {
+  const parsedUrl = new URL(url);
+  return `${parsedUrl.origin}${parsedUrl.pathname}`;
+}
+
+function getGithubQueryKeys(url: string): string[] {
+  const parsedUrl = new URL(url);
+  const queryKeys = Array.from(parsedUrl.searchParams.keys());
+  return [...new Set(queryKeys)];
+}
+
+async function fetchGitHubApi({
+  url,
+  init,
+  requestName,
+  metadata,
+}: {
+  url: string;
+  init?: RequestInit;
+  requestName: string;
+  metadata?: GitHubRequestMetadata;
+}): Promise<Response> {
+  const logger = createLogger({
+    correlationId: generateCorrelationId(),
+    operation: `github_api_${requestName}`,
+  });
+  const startedAt = Date.now();
+  const method = init?.method ?? "GET";
+  const safeUrl = getLogSafeGithubUrl(url);
+  const queryKeys = getGithubQueryKeys(url);
+
+  logger.info("GitHub API request started", {
+    method,
+    url: safeUrl,
+    queryKeys,
+    ...metadata,
+  });
+
+  try {
+    const response = await fetch(url, init);
+
+    logger.info("GitHub API request completed", {
+      method,
+      url: safeUrl,
+      queryKeys,
+      status: response.status,
+      durationMs: Date.now() - startedAt,
+      ...metadata,
+    });
+
+    return response;
+  } catch (error) {
+    logger.error("GitHub API request failed", error instanceof Error ? error : null, {
+      method,
+      url: safeUrl,
+      queryKeys,
+      durationMs: Date.now() - startedAt,
+      ...metadata,
+    });
+    throw error;
+  }
+}
+
 async function getInstallationToken({
   env,
   installationId,
@@ -161,9 +234,14 @@ export async function getInstallationAccessToken({
     } as const;
   }
 
-  const response = await fetch(
-    `https://api.github.com/app/installations/${installationId}/access_tokens`,
-    {
+  const accessTokenUrl = `https://api.github.com/app/installations/${installationId}/access_tokens`;
+  const response = await fetchGitHubApi({
+    url: accessTokenUrl,
+    requestName: "installation_access_token",
+    metadata: {
+      installationId,
+    },
+    init: {
       method: "POST",
       headers: {
         Accept: "application/vnd.github+json",
@@ -171,8 +249,8 @@ export async function getInstallationAccessToken({
         "User-Agent": "CommitLens-App",
         "X-GitHub-Api-Version": "2022-11-28",
       },
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -212,8 +290,16 @@ export async function getInstallationRepositories({
     return tokenResult;
   }
 
-  const response = await fetch("https://api.github.com/installation/repositories", {
-    headers: buildGitHubHeaders({ token: tokenResult.data }),
+  const installationRepositoriesUrl = "https://api.github.com/installation/repositories";
+  const response = await fetchGitHubApi({
+    url: installationRepositoriesUrl,
+    requestName: "installation_repositories",
+    metadata: {
+      installationId,
+    },
+    init: {
+      headers: buildGitHubHeaders({ token: tokenResult.data }),
+    },
   });
 
   if (!response.ok) {
@@ -257,12 +343,20 @@ export async function getInstallation({
     } as const;
   }
 
-  const response = await fetch(`https://api.github.com/app/installations/${installationId}`, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${appJWT}`,
-      "User-Agent": "CommitLens-App",
-      "X-GitHub-Api-Version": "2022-11-28",
+  const installationUrl = `https://api.github.com/app/installations/${installationId}`;
+  const response = await fetchGitHubApi({
+    url: installationUrl,
+    requestName: "installation_details",
+    metadata: {
+      installationId,
+    },
+    init: {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${appJWT}`,
+        "User-Agent": "CommitLens-App",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
     },
   });
 
@@ -309,15 +403,23 @@ export async function fetchPullRequestDiff({
     return tokenResult;
   }
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-    {
+  const pullRequestUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
+  const response = await fetchGitHubApi({
+    url: pullRequestUrl,
+    requestName: "pull_request_diff",
+    metadata: {
+      installationId,
+      owner,
+      repo,
+      prNumber,
+    },
+    init: {
       headers: buildGitHubHeaders({
         token: tokenResult.data,
         accept: "application/vnd.github.v3.diff",
       }),
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -352,12 +454,20 @@ export async function fetchPullRequestDetails({
     return tokenResult;
   }
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-    {
+  const pullRequestUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
+  const response = await fetchGitHubApi({
+    url: pullRequestUrl,
+    requestName: "pull_request_details",
+    metadata: {
+      installationId,
+      owner,
+      repo,
+      prNumber,
+    },
+    init: {
       headers: buildGitHubHeaders({ token: tokenResult.data }),
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -405,12 +515,21 @@ export async function fetchPullRequestFiles({
   const files: GitHubPullRequestFile[] = [];
 
   for (let page = 1; page <= 30; page += 1) {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/files?per_page=100&page=${page}`,
-      {
+    const pullRequestFilesUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/files?per_page=100&page=${page}`;
+    const response = await fetchGitHubApi({
+      url: pullRequestFilesUrl,
+      requestName: "pull_request_files",
+      metadata: {
+        installationId,
+        owner,
+        repo,
+        prNumber,
+        page,
+      },
+      init: {
         headers: buildGitHubHeaders({ token: tokenResult.data }),
-      }
-    );
+      },
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -469,12 +588,20 @@ export async function fetchRepositoryTextContent({
     .map((part) => encodeURIComponent(part))
     .join("/");
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`,
-    {
+  const repositoryContentUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`;
+  const response = await fetchGitHubApi({
+    url: repositoryContentUrl,
+    requestName: "repository_content",
+    metadata: {
+      installationId,
+      owner,
+      repo,
+      path,
+    },
+    init: {
       headers: buildGitHubHeaders({ token: tokenResult.data }),
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -543,9 +670,17 @@ export async function postPullRequestReview({
     return tokenResult;
   }
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`,
-    {
+  const postReviewUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`;
+  const response = await fetchGitHubApi({
+    url: postReviewUrl,
+    requestName: "post_pull_request_review",
+    metadata: {
+      installationId,
+      owner,
+      repo,
+      prNumber,
+    },
+    init: {
       method: "POST",
       headers: {
         ...buildGitHubHeaders({ token: tokenResult.data }),
@@ -564,8 +699,8 @@ export async function postPullRequestReview({
           start_side: comment.startSide,
         })),
       }),
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -614,17 +749,25 @@ export async function postPullRequestComment({
     return tokenResult;
   }
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`,
-    {
+  const postCommentUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+  const response = await fetchGitHubApi({
+    url: postCommentUrl,
+    requestName: "post_pull_request_comment",
+    metadata: {
+      installationId,
+      owner,
+      repo,
+      prNumber,
+    },
+    init: {
       method: "POST",
       headers: {
         ...buildGitHubHeaders({ token: tokenResult.data }),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ body }),
-    }
-  );
+    },
+  });
 
   if (!response.ok) {
     const error = await response.text();

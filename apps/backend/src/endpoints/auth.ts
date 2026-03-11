@@ -2,6 +2,7 @@ import * as jwt from "@tsndr/cloudflare-worker-jwt";
 import { connectDb } from "../features/db/connect";
 import {
   exchangeGitHubAuthorizationCode,
+  hasGitHubAppConfiguration,
   getGitHubOauthAuthorizationUrl,
   getGitHubOAuthUser,
   getGitHubPrimaryEmail,
@@ -50,7 +51,117 @@ function getSafeRedirectPath(redirectTo: string | null | undefined): string | nu
   return redirectTo;
 }
 
+function getMaskedClientId(clientId: string | null | undefined): string | null {
+  if (!clientId) {
+    return null;
+  }
+
+  const trimmedClientId = clientId.trim();
+
+  if (trimmedClientId.length === 0) {
+    return null;
+  }
+
+  const visibleLength = Math.min(8, trimmedClientId.length);
+  return trimmedClientId.length > visibleLength
+    ? `${trimmedClientId.slice(0, visibleLength)}...`
+    : trimmedClientId;
+}
+
+function getFullClientId(clientId: string | null | undefined): string | null {
+  if (!clientId) {
+    return null;
+  }
+
+  const trimmedClientId = clientId.trim();
+
+  if (trimmedClientId.length === 0) {
+    return null;
+  }
+
+  return trimmedClientId;
+}
+
+function getAuthorizationUrlWithoutState(authorizationUrl: string): string {
+  const url = new URL(authorizationUrl);
+
+  if (url.searchParams.has("state")) {
+    url.searchParams.set("state", "<redacted>");
+  }
+
+  return url.toString();
+}
+
 authEndpoint.use("/me", requireSession());
+
+authEndpoint.get("/config-check", async (c) => {
+  if (c.env.ENVIRONMENT === "production") {
+    return c.json({ error: "Not found" }, 404);
+  }
+
+  const hasOauthConfig = hasGitHubOauthConfiguration({ env: c.env });
+  const hasAppConfig = hasGitHubAppConfiguration({ env: c.env });
+  const stateToken = await jwt.sign(
+    {
+      flow: "github_oauth",
+      timestamp: Date.now(),
+      exp: Math.floor(Date.now() / 1000) + 600,
+    },
+    c.env.JWT_SECRET
+  );
+
+  let generatedRedirectUri: string | null = null;
+  let generatedClientIdPrefix: string | null = null;
+  let generatedClientId: string | null = null;
+  let authorizationHost: string | null = null;
+  let authorizationPath: string | null = null;
+  let authorizationUrlWithoutState: string | null = null;
+
+  if (hasOauthConfig) {
+    const authorizationUrl = getGitHubOauthAuthorizationUrl({
+      env: c.env,
+      state: stateToken,
+    });
+    const parsedAuthorizationUrl = new URL(authorizationUrl);
+
+    generatedRedirectUri = parsedAuthorizationUrl.searchParams.get("redirect_uri");
+    generatedClientIdPrefix = getMaskedClientId(
+      parsedAuthorizationUrl.searchParams.get("client_id")
+    );
+    generatedClientId = getFullClientId(
+      parsedAuthorizationUrl.searchParams.get("client_id")
+    );
+    authorizationHost = parsedAuthorizationUrl.host;
+    authorizationPath = parsedAuthorizationUrl.pathname;
+    authorizationUrlWithoutState = getAuthorizationUrlWithoutState(authorizationUrl);
+  }
+
+  return c.json({
+    ok: true,
+    data: {
+      environment: c.env.ENVIRONMENT ?? "development",
+      oauth: {
+        hasConfiguration: hasOauthConfig,
+        clientIdPrefix: getMaskedClientId(c.env.GITHUB_OAUTH_CLIENT_ID),
+        clientId: getFullClientId(c.env.GITHUB_OAUTH_CLIENT_ID),
+        configuredRedirectUri: c.env.GITHUB_OAUTH_REDIRECT_URI,
+        generatedClientIdPrefix,
+        generatedClientId,
+        generatedRedirectUri,
+        authorizationHost,
+        authorizationPath,
+        authorizationUrlWithoutState,
+        redirectUriMatchesConfiguration:
+          generatedRedirectUri !== null &&
+          generatedRedirectUri === c.env.GITHUB_OAUTH_REDIRECT_URI,
+      },
+      githubApp: {
+        hasConfiguration: hasAppConfig,
+        appSlug: c.env.GITHUB_APP_SLUG,
+      },
+    },
+  });
+});
 
 authEndpoint.get("/github/start", async (c) => {
   const logger = createLogger({
@@ -60,8 +171,8 @@ authEndpoint.get("/github/start", async (c) => {
 
   if (!hasGitHubOauthConfiguration({ env: c.env })) {
     logger.warn("GitHub OAuth start blocked because configuration is incomplete", {
-      hasClientId: c.env.GITHUB_CLIENT_ID !== "WIP",
-      hasClientSecret: c.env.GITHUB_CLIENT_SECRET !== "WIP",
+      hasClientId: c.env.GITHUB_OAUTH_CLIENT_ID !== "WIP",
+      hasClientSecret: c.env.GITHUB_OAUTH_CLIENT_SECRET !== "WIP",
       hasRedirectUri: c.env.GITHUB_OAUTH_REDIRECT_URI.trim().length > 0,
     });
 
@@ -84,12 +195,35 @@ authEndpoint.get("/github/start", async (c) => {
       c.env.JWT_SECRET
     );
 
-    return c.redirect(
-      getGitHubOauthAuthorizationUrl({
-        env: c.env,
-        state: stateToken,
-      })
-    );
+    const authorizationUrl = getGitHubOauthAuthorizationUrl({
+      env: c.env,
+      state: stateToken,
+    });
+    const parsedAuthorizationUrl = new URL(authorizationUrl);
+    const generatedRedirectUri =
+      parsedAuthorizationUrl.searchParams.get("redirect_uri");
+
+    logger.info("Generated GitHub OAuth authorization URL", {
+      clientIdPrefix: getMaskedClientId(c.env.GITHUB_OAUTH_CLIENT_ID),
+      clientId: getFullClientId(c.env.GITHUB_OAUTH_CLIENT_ID),
+      generatedClientIdPrefix: getMaskedClientId(
+        parsedAuthorizationUrl.searchParams.get("client_id")
+      ),
+      generatedClientId: getFullClientId(
+        parsedAuthorizationUrl.searchParams.get("client_id")
+      ),
+      configuredRedirectUri: c.env.GITHUB_OAUTH_REDIRECT_URI,
+      generatedRedirectUri,
+      authorizationUrlWithoutState: getAuthorizationUrlWithoutState(
+        authorizationUrl
+      ),
+      redirectUriMatchesConfiguration:
+        generatedRedirectUri === c.env.GITHUB_OAUTH_REDIRECT_URI,
+      requestedScopes: parsedAuthorizationUrl.searchParams.get("scope"),
+      redirectTo: redirectTo ?? null,
+    });
+
+    return c.redirect(authorizationUrl);
   } catch (error) {
     logger.error("Failed to start GitHub OAuth", error instanceof Error ? error : null);
     return c.redirect(

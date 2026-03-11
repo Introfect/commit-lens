@@ -11,11 +11,13 @@ type LandingLoaderData = {
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
-  'github-auth-config': 'GitHub login is not configured yet. Set the GitHub client ID and client secret in the backend environment first.',
+  'github-auth-config':
+    'GitHub login is not configured yet. Verify GITHUB_OAUTH_CLIENT_ID, GITHUB_OAUTH_CLIENT_SECRET, and GITHUB_OAUTH_REDIRECT_URI in backend env.',
   'github-auth-denied': 'GitHub sign-in was canceled before the session was created.',
   'github-auth-failed': 'GitHub sign-in failed. Start the login flow again.',
   'github-auth-missing-code': 'GitHub did not return a valid authorization code.',
-  'github-auth-start': 'GitHub sign-in could not be started from the backend.',
+  'github-auth-start':
+    'GitHub sign-in could not be started from the backend. Check /api/v1/auth/config-check for local OAuth diagnostics.',
   'github-auth-state': 'The GitHub login state expired or was invalid.',
   'github-auth-token': 'GitHub returned an invalid OAuth token response.',
   'github-auth-user': 'GitHub user data could not be loaded.',

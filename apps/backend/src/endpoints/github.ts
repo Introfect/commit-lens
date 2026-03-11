@@ -3,6 +3,7 @@ import { connectDb } from "../features/db/connect";
 import { eq } from "drizzle-orm";
 import { RepositoryInstallationTable } from "../features/db/schema";
 import {
+  hasGitHubAppConfiguration,
   getGitHubAppManageInstallationUrl,
   getGitHubAppNewInstallationUrl,
 } from "../features/auth/github";
@@ -63,6 +64,24 @@ githubEndpoint.get("/redirect", async (c) => {
   });
 
   try {
+    if (!hasGitHubAppConfiguration({ env: c.env })) {
+      logger.warn("GitHub App redirect blocked because configuration is incomplete", {
+        hasAppSlug:
+          c.env.GITHUB_APP_SLUG.trim().length > 0 &&
+          c.env.GITHUB_APP_SLUG !== "WIP",
+        hasAppId: c.env.GITHUB_APP_ID.trim().length > 0 && c.env.GITHUB_APP_ID !== "WIP",
+        hasPrivateKey:
+          c.env.GITHUB_APP_PRIVATE_KEY.trim().length > 0 &&
+          c.env.GITHUB_APP_PRIVATE_KEY !== "WIP",
+      });
+
+      return c.redirect(
+        buildDashboardRedirect(c.env, {
+          error: "github-app-config",
+        })
+      );
+    }
+
     // Generate a JWT state token containing the user ID
     // This will be sent back by GitHub and allows us to identify the user
     const stateToken = await jwt.sign(
@@ -85,6 +104,7 @@ githubEndpoint.get("/redirect", async (c) => {
             installationId: primaryInstallation.installationId,
           })
         : getGitHubAppNewInstallationUrl({
+            appSlug: c.env.GITHUB_APP_SLUG,
             state: stateToken,
           });
 

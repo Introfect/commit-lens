@@ -73,6 +73,15 @@ function getDashboardNotice(searchParams: URLSearchParams): DashboardNotice | nu
     };
   }
 
+  if (error === 'github-app-config') {
+    return {
+      tone: 'error',
+      title: 'GitHub App configuration is incomplete',
+      description:
+        'CommitLens could not start the installation flow because one or more GitHub App settings are missing.',
+    };
+  }
+
   if (sync === 'success') {
     return {
       tone: 'success',
